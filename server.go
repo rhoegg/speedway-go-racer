@@ -43,14 +43,16 @@ func main() {
 		racerId = "00000000-0000-0000-0000-000000000008"
 	}
 	e.POST("/1brc", func(c echo.Context) error {
+		e.Logger.Print("starting 1brc")
 		averages := make(map[string]RunningAverage)
 		decoder := json.NewDecoder(c.Request().Body)
-		t, err := decoder.Token()
+		_, err := decoder.Token()
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%T: %v\n", t, t)
+		//fmt.Printf("%T: %v\n", t, t)
 		var m Measurement
+		rows := 0
 		for decoder.More() {
 			err = decoder.Decode(&m)
 
@@ -62,13 +64,14 @@ func main() {
 			avg.Value += (float32(m.Temperature) - avg.Value) / float32(avg.Count)
 			//fmt.Printf("%s (%d): %.5f\n", m.Station, avg.Count, avg.Value)
 			averages[m.Station] = avg
+			rows++
 		}
 
-		t, err = decoder.Token()
+		_, err = decoder.Token()
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%T: %v\n", t, t)
+		//fmt.Printf("%T: %v\n", t, t)
 
 		responseData := Response1BRC{
 			RacerID:  racerId,
@@ -83,6 +86,7 @@ func main() {
 		slices.SortFunc(responseData.Averages, func(a, b Measurement) int {
 			return cmp.Compare(a.Station, b.Station)
 		})
+		e.Logger.Printf("Finished 1brc %d rows", rows)
 		return c.JSON(200, responseData)
 	})
 
