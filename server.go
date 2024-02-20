@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
+	"os"
 	"slices"
 	"strconv"
 )
@@ -31,8 +32,16 @@ func (r RoundedFloat) MarshalJSON() ([]byte, error) {
 }
 
 func main() {
-	e := echo.New()
 
+	e := echo.New()
+	port, found := os.LookupEnv("RACER_PORT")
+	if !found {
+		port = "1323"
+	}
+	racerId, found := os.LookupEnv("RACER_ID")
+	if !found {
+		racerId = "00000000-0000-0000-0000-000000000008"
+	}
 	e.POST("/1brc", func(c echo.Context) error {
 		averages := make(map[string]RunningAverage)
 		decoder := json.NewDecoder(c.Request().Body)
@@ -62,7 +71,7 @@ func main() {
 		fmt.Printf("%T: %v\n", t, t)
 
 		responseData := Response1BRC{
-			RacerID:  "00000000-0000-0000-0000-000000000008",
+			RacerID:  racerId,
 			Averages: nil,
 		}
 		for station, avg := range averages {
@@ -77,5 +86,5 @@ func main() {
 		return c.JSON(200, responseData)
 	})
 
-	e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
