@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/coreos/go-systemd/daemon"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"net"
 	"os"
 	"slices"
@@ -44,6 +45,7 @@ func main() {
 	if !found {
 		racerId = "00000000-0000-0000-0000-000000000008"
 	}
+	e.Use(middleware.Decompress())
 	e.POST("/1brc", func(c echo.Context) error {
 		e.Logger.Print("starting 1brc")
 		averages := make(map[string]RunningAverage)
@@ -67,6 +69,9 @@ func main() {
 			//fmt.Printf("%s (%d): %.5f\n", m.Station, avg.Count, avg.Value)
 			averages[m.Station] = avg
 			rows++
+			if rows%1000000 == 0 {
+				e.Logger.Printf("[1brc] processed %d rows", rows)
+			}
 		}
 
 		_, err = decoder.Token()
