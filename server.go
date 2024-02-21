@@ -19,7 +19,7 @@ type Measurement struct {
 }
 
 type RunningAverage struct {
-	Value float32
+	Value float64
 	Count int64
 }
 
@@ -28,10 +28,10 @@ type Response1BRC struct {
 	Averages []Measurement `json:"averages"`
 }
 
-type RoundedFloat float32
+type RoundedFloat float64
 
 func (r RoundedFloat) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.FormatFloat(float64(r), 'f', 5, 32)), nil
+	return []byte(strconv.FormatFloat(float64(r), 'f', 5, 64)), nil
 }
 
 func main() {
@@ -61,11 +61,12 @@ func main() {
 			err = decoder.Decode(&m)
 
 			if err != nil {
+				e.Logger.Errorf("error reading request data at row %d: %v", rows, err)
 				return err
 			}
 			avg := averages[m.Station]
 			avg.Count += 1
-			avg.Value += (float32(m.Temperature) - avg.Value) / float32(avg.Count)
+			avg.Value += (float64(m.Temperature) - avg.Value) / float64(avg.Count)
 			//fmt.Printf("%s (%d): %.5f\n", m.Station, avg.Count, avg.Value)
 			averages[m.Station] = avg
 			rows++
