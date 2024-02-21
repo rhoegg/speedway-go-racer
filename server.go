@@ -4,7 +4,9 @@ import (
 	"cmp"
 	"encoding/json"
 	"fmt"
+	"github.com/coreos/go-systemd/daemon"
 	"github.com/labstack/echo/v4"
+	"net"
 	"os"
 	"slices"
 	"strconv"
@@ -90,5 +92,11 @@ func main() {
 		return c.JSON(200, responseData)
 	})
 
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		e.Logger.Fatal(err)
+	}
+	e.Listener = l
+	daemon.SdNotify(false, daemon.SdNotifyReady)
+	e.Logger.Fatal(e.Start(""))
 }
