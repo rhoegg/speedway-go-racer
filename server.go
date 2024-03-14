@@ -55,14 +55,14 @@ func main() {
 	}
 	e.Use(middleware.Decompress())
 	e.POST("/races", func(c echo.Context) error {
-		e.Logger.Print("starting race")
+		raceId := uuid.New()
+		e.Logger.Printf("starting race for %s [%s]", racerId, raceId.String())
 		decoder := json.NewDecoder(c.Request().Body)
 		var message RaceMessage
 		err := decoder.Decode(&message)
 		if err != nil {
 			return err
 		}
-		raceId := uuid.New()
 		races[raceId.String()] = message.Token
 		// TODO: time.AfterFunc to clean these up
 		return c.JSON(201, RaceMessage{
