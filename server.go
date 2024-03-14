@@ -18,7 +18,7 @@ import (
 type RaceMessage struct {
 	Token   string `json:"token"`
 	Id      string `json:"id"`
-	RacerId string `json:"racerid"`
+	RacerId string `json:"racerId"`
 }
 type Measurement struct {
 	Station     string       `json:"station"`
